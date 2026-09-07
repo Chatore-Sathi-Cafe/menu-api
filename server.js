@@ -8,7 +8,6 @@ const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI;
 const DB_NAME = process.env.DB_NAME || "chatore_sathi";
 
-// Allow requests from your GitHub Pages site (and anywhere, if you leave it open)
 app.use(cors());
 
 let client;
@@ -23,8 +22,6 @@ async function getDb() {
   return db;
 }
 
-// GET /api/menu -> returns menu in the same shape the frontend's MENU object used to have
-// { "🍕 Pizzas": [ {...}, {...} ], "🍔 Burgers": [ {...} ], ... }
 app.get("/api/menu", async (req, res) => {
   try {
     const database = await getDb();
@@ -36,7 +33,6 @@ app.get("/api/menu", async (req, res) => {
 
     const menu = {};
     for (const cat of categories) {
-      // strip mongo-internal fields before sending to the browser
       menu[cat.name] = (cat.items || []).map(({ _id, ...item }) => item);
     }
 
@@ -47,8 +43,27 @@ app.get("/api/menu", async (req, res) => {
   }
 });
 
+// GET /api/settings -> returns store open/close hours from the "settings" collection
+app.get("/api/settings", async (req, res) => {
+  try {
+    const database = await getDb();
+    const settings = await database
+      .collection("settings")
+      .findOne({ _id: "storeHours" });
+
+    if (!settings) {
+      return res.status(404).json({ error: "Store hours not configured" });
+    }
+
+    res.json({ openHour: settings.openHour, closeHour: settings.closeHour });
+  } catch (err) {
+    console.error("Failed to load settings:", err);
+    res.status(500).json({ error: "Failed to load settings" });
+  }
+});
+
 app.get("/", (req, res) => {
-  res.send("Chatore Sathi menu API is running. Try /api/menu");
+  res.send("Don't come here.");
 });
 
 app.listen(PORT, () => {
