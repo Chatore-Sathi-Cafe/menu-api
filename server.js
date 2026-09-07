@@ -63,7 +63,7 @@ app.get("/api/settings", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send("Don't come here.");
+  res.send("Nothing to see here.");
 });
 
 app.listen(PORT, () => {
