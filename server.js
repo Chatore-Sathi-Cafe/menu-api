@@ -62,6 +62,42 @@ app.get("/api/settings", async (req, res) => {
   }
 });
 
+// GET /api/web -> returns the full website HTML (install-popup version) from the "pages" collection
+app.get("/api/web", async (req, res) => {
+  try {
+    const database = await getDb();
+    const doc = await database.collection("pages").findOne({ _id: "web" });
+
+    if (!doc) {
+      return res.status(404).send("Web page not seeded yet. Run push-pages.js first.");
+    }
+
+    res.set("Content-Type", "text/html");
+    res.send(doc.html);
+  } catch (err) {
+    console.error("Failed to load web page:", err);
+    res.status(500).send("Failed to load web page");
+  }
+});
+
+// GET /api/app -> returns the full APK HTML (splash-screen version) from the "pages" collection
+app.get("/api/app", async (req, res) => {
+  try {
+    const database = await getDb();
+    const doc = await database.collection("pages").findOne({ _id: "app" });
+
+    if (!doc) {
+      return res.status(404).send("App page not seeded yet. Run push-pages.js first.");
+    }
+
+    res.set("Content-Type", "text/html");
+    res.send(doc.html);
+  } catch (err) {
+    console.error("Failed to load app page:", err);
+    res.status(500).send("Failed to load app page");
+  }
+});
+
 app.get("/", (req, res) => {
   res.send("Nothing to see here.");
 });
